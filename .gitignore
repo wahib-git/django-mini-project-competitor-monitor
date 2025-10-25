@@ -1,0 +1,8 @@
+# Dossiers et fichiers d'environnement
+my_env/
+.venv/
+venv/
+
+# Fichiers de cache Python
+__pycache__/
+*.pyc
