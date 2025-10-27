@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="form">
+    <h1>Connexion</h1>
+    {% if messages %}
+    <div class="error-messages">
+      {% for message in messages %}
+      <p class="error">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <form method="post" action="{% url 'connexion' %}">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Se connecter</button>
+    </form>
+    <p class="link">
+      Pas encore inscrit ? <a href="{% url 'inscription' %}">S'inscrire</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
