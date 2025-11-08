@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>Dashboard Admin</h2>
+  <p>Vous êtes administrateur.</p>
+  <a href="{% url 'deconnexion' %}" class="logout-link">Déconnexion</a>
+</div>
+{% endblock %}

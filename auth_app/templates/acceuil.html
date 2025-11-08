@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-{% block title %}Accueil{% endblock %}
-{% block content %}
-<div class="container">
-  <h2>Bienvenue, {{ user.username }}!</h2>
-  <button><a href="{% url 'deconnexion' %}">Déconnexion</a></button>
-</div>
-{% endblock %}

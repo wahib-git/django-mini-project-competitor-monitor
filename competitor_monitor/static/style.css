@@ -38,7 +38,6 @@ body {
 label {
   padding: 10px 0;
   color: #009579;
-  cursor: pointer;
 }
 
 input {
@@ -55,7 +54,6 @@ input {
 a {
   font-size: 20px;
   color: #009579;
-  text-decoration: none;
 }
 
 a:hover {
@@ -104,3 +102,14 @@ ul {
   list-style: none;
   color:#006653
 }
+/* Ajoute (optionnel) dans style.css */
+.logout-link {
+  display:inline-block;
+  background:#009579;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:6px;
+  text-decoration:none;
+  margin-top:20px;
+}
+.logout-link:hover { background:#006653; }

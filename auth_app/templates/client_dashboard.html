@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Client Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>Bienvenue {{ user.username }} (Client)</h2>
+  <a href="{% url 'deconnexion' %}" class="logout-link">Déconnexion</a>
+</div>
+{% endblock %}
