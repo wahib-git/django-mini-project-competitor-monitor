@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Concurrents{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-store"></i> Mes Concurrents</h2>
+            <p class="text-muted">Gérez et surveillez vos concurrents en temps réel</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'competitors:competitor_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un concurrent
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_competitors }}</h3>
+                    <p class="text-muted mb-0">Concurrents suivis</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ active_competitors }}</h3>
+                    <p class="text-muted mb-0">Actifs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ unread_alerts_count }}</h3>
+                    <p class="text-muted mb-0">Alertes non lues</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des concurrents -->
+    {% if competitors %}
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Liste des concurrents</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>URL</th>
+                            <th>Produits</th>
+                            <th>Dernier scraping</th>
+                            <th>Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for competitor in competitors %}
+                        <tr>
+                            <td>
+                                <strong>{{ competitor.name }}</strong>
+                            </td>
+                            <td>
+                                <a href="{{ competitor.base_url }}" target="_blank" class="text-decoration-none">
+                                    {{ competitor.base_url|truncatechars:50 }}
+                                    <i class="fas fa-external-link-alt fa-xs"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'competitors:product_list' competitor.id %}" class="badge bg-info text-decoration-none">
+                                    {{ competitor.product_count }} produit(s)
+                                </a>
+                            </td>
+                            <td>
+                                {% if competitor.last_scraped_at %}
+                                    <small class="text-muted">{{ competitor.last_scraped_at|timesince }} ago</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">Jamais</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if competitor.is_active %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <!-- Boutons d'action -->
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <!-- 🔥 BOUTON SCRAPING -->
+                                    <form method="post" action="{% url 'competitors:trigger_scraping' competitor.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success" title="Lancer le scraping" 
+                                                onclick="return confirm('Lancer le scraping de {{ competitor.name }} ?');">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- 🔥 BOUTON ANALYSE -->
+                                    <form method="post" action="{% url 'competitors:trigger_analysis' competitor.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-warning" title="Analyser les prix"
+                                                onclick="return confirm('Analyser les prix de {{ competitor.name }} ?');">
+                                            <i class="fas fa-chart-line"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Bouton Modifier -->
+                                    <a href="{% url 'competitors:competitor_edit' competitor.id %}" 
+                                       class="btn btn-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <!-- Bouton Supprimer -->
+                                    <a href="{% url 'competitors:competitor_delete' competitor.id %}" 
+                                       class="btn btn-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Aucun concurrent -->
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle fa-3x mb-3"></i>
+        <h4>Aucun concurrent pour le moment</h4>
+        <p>Commencez par ajouter votre premier concurrent à surveiller.</p>
+        <a href="{% url 'competitors:competitor_add' %}" class="btn btn-primary mt-2">
+            <i class="fas fa-plus"></i> Ajouter mon premier concurrent
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- FontAwesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

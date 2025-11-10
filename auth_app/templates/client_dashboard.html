@@ -1,8 +1,55 @@
-{% extends "base.html" %}
-{% block title %}Client Dashboard{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Client{% endblock %}
+
 {% block content %}
-<div class="container">
-  <h2>Bienvenue {{ user.username }} (Client)</h2>
-  <a href="{% url 'deconnexion' %}" class="logout-link">Déconnexion</a>
+<div class="container mt-4">
+    <h2>Bienvenue, {{ request.user.username }} !</h2>
+    
+    <div class="row mt-4">
+        <!-- Card Concurrents -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-store fa-3x text-primary mb-3"></i>
+                    <h4>Mes Concurrents</h4>
+                    <p class="text-muted">Gérer les sites surveillés</p>
+                    <a href="{% url 'competitors:competitor_list' %}" class="btn btn-primary">
+                        Accéder <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Alertes -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-bell fa-3x text-warning mb-3"></i>
+                    <h4>Mes Alertes</h4>
+                    <p class="text-muted">Voir les notifications</p>
+                    <a href="{% url 'alerts:alert_list' %}" class="btn btn-warning">
+                        Accéder <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Profil -->
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-3x text-success mb-3"></i>
+                    <h4>Mon Profil</h4>
+                    <p class="text-muted">Paramètres du compte</p>
+                    <a href="#" class="btn btn-success">
+                        Accéder <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
