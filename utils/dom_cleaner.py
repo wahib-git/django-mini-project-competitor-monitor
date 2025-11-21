@@ -1,22 +1,20 @@
 from bs4 import BeautifulSoup
 
 
+
 def clean_html_content(raw_html):
     """
     Nettoie le HTML pour garder seulement le contenu pertinent
     """
     soup = BeautifulSoup(raw_html, 'lxml')
-    
+
     # Supprimer les tags inutiles
     for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe', 'noscript']):
         tag.decompose()
-    
+
     # Extraire le texte
     text = soup.get_text(separator=' ', strip=True)
-    
-    # Nettoyer les espaces multiples
-    text = ' '.join(text.split())
-    
+    print(f"Texte extrait du HTML: {text[:50000]}")  # Log first 50000 chars
     return text
 
 
@@ -24,6 +22,7 @@ def split_into_batches(text, max_chars=7500):
     """
     Divise le texte en batches pour l'envoi au LLM
     """
+
     if len(text) <= max_chars:
         return [text]
     
@@ -43,3 +42,4 @@ def split_into_batches(text, max_chars=7500):
         batches.append(current_batch.strip())
     
     return batches
+

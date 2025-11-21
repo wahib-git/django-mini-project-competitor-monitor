@@ -1,5 +1,3 @@
-import uuid
-from datetime import datetime
 from django.utils import timezone
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,8 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from .models import Competitor, Product, PriceHistory, ScrapeSession
 from alerts.models import Alert
 from utils.dom_cleaner import clean_html_content, split_into_batches
-from utils.llm_processor import extract_products_with_llm, extract_products_with_retry
-
+from utils.llm_processor import extract_products_with_llm
 
 def scrape_competitor_website(competitor_id):
     """
@@ -44,43 +41,60 @@ def scrape_competitor_website(competitor_id):
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.set_page_load_timeout(30)
+        print("🚀 1.Selenium WebDriver configuré en mode headless")
         
         # 2. Naviguer vers le site
-        print(f"🌐 Scraping: {competitor.base_url}")
+        print(f"🌐2.Naviguation vers le site: {competitor.base_url}")
         driver.get(competitor.base_url)
         
         # Attendre que la page se charge (ajuster le sélecteur selon le site)
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.TAG_NAME, "body"))
+            EC.presence_of_element_located((By.TAG_NAME, 'body'))
         )
+        print("✅ Page chargée")
+
         
-        # 3. Extraire le HTML
-        raw_html = driver.page_source
-        driver.quit()
+        # 3. Extraire le contenu du <body> UNIQUEMENT
+        # Localiser l'élément body
+        body_element = driver.find_element(By.TAG_NAME, 'body')
+        
+        # Récupérer l'attribut 'innerHTML' de l'élément body, qui est tout le contenu interne
+        raw_html = body_element.get_attribute('innerHTML')
+        print("📝 Contenu du <body> extrait")
+        driver.quit()    
         
         # Sauvegarder le HTML brut pour debug
         session.raw_html = raw_html[:50000]  # Limiter à 50k caractères
         session.save()
-        
+        print("💾 HTML brut sauvegardé dans la session")
+
+
         # 4. Nettoyer le HTML
-        print("🧹 Nettoyage du HTML...")
+        print("🧹 4.Nettoyage du HTML...")
         cleaned_text = clean_html_content(raw_html)
         
         # 5. Diviser en batches
         batches = split_into_batches(cleaned_text, max_chars=7500)
+        print("📦 5.Texte divisé en batches pour LLM")
         print(f"📦 {len(batches)} batches créés")
-        
+        print(f'📦 Exemple batch 1 (premiers 7500 chars): {batches[0][:7500]}')
+        print(f'📦 Exemple batch 2 (premiers 7500 chars): {batches[1][:7500]}' if len(batches) > 1 else "📦 Pas de batch 2")
+
         # 6. Extraire les produits avec LLM
         all_products = []
         all_promotions = []
         
         for i, batch in enumerate(batches):
             print(f"🤖 Traitement batch {i+1}/{len(batches)} avec LLM...")
-            llm_response = extract_products_with_retry(text_batch=batch, competitor_base_url=competitor.base_url,max_retries=2,model='llama3.1')
+            llm_response = extract_products_with_llm(text_batch=batch, competitor_base_url=competitor.base_url,model='llama3.1')
             all_products.extend(llm_response.products)
             all_promotions.extend(llm_response.promotions)
-        
+        print("🤖 6.Extraction LLM terminée")
         print(f"✅ {len(all_products)} produits extraits")
+        print(f"✅ {len(all_promotions)} promotions extraites")
+        print(f"✅ produits extraits exemple: {[p.name for p in all_products[:3]]}")
+        print(f"✅ promotions extraites exemple: {all_promotions[:3]}")
+
         
         # 7. Sauvegarder les produits en base de données
         products_saved = save_products_to_database(
@@ -88,17 +102,19 @@ def scrape_competitor_website(competitor_id):
             competitor, 
             session_id
         )
-        
+        print(f"💾 7.Sauvegarde terminée: {products_saved} produits enregistrés")
+
         # 8. Finaliser la session
         session.status = 'completed'
         session.completed_at = timezone.now()
         session.products_found = products_saved
         session.save()
+        print("✅ 8.Session finalisée")
         
         # 9. Mettre à jour le timestamp du competitor
         competitor.last_scraped_at = timezone.now()
         competitor.save()
-        
+        print("🕒 9.Timestamp du competitor mis à jour")
         return {
             "success": True,
             "products_found": products_saved,
