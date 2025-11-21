@@ -150,39 +150,37 @@ Extrait TOUS les produits avec leurs informations complètes."""
         return LLMResponse(products=[], promotions=[])
 
 
-def extract_products_with_retry(
-    text_batch: str, 
-    competitor_base_url: str, 
-    max_retries: int = 2,
-    model: str = 'llama3.1'
-) -> LLMResponse:
+def test_llm_extraction():
     """
-    Wrapper avec logique de retry pour gérer les échecs temporaires
-    
-    Args:
-        text_batch: Texte à analyser
-        competitor_base_url: URL du concurrent
-        max_retries: Nombre maximum de tentatives
-        model: Modèle Ollama à utiliser
-    
-    Returns:
-        LLMResponse: Résultat de l'extraction
+    Fonction de test pour vérifier le bon fonctionnement du LLM
+    À exécuter manuellement depuis le shell Django
     """
-    for attempt in range(max_retries):
-        print(f"🔄 Tentative {attempt + 1}/{max_retries} d'extraction LLM")
-        
-        result = extract_products_with_llm(text_batch, competitor_base_url, model)
-        
-        # Si au moins un produit trouvé, c'est un succès
-        if result.products:
-            print(f"✅ Succès à la tentative {attempt + 1}")
-            return result
-        
-        # Si dernière tentative et toujours rien, retourner résultat vide
-        if attempt == max_retries - 1:
-            print(f"⚠️ Aucun produit extrait après {max_retries} tentatives")
-            return result
-        
-        print(f"⚠️ Tentative {attempt + 1} n'a trouvé aucun produit, retry...")
+    sample_text = """
+    iPhone 15 Pro Max 256GB - Prix: 1199.99 EUR
+    Référence: IPHONE15PM256
     
-    return LLMResponse(products=[], promotions=[])
+    Description: Le dernier smartphone Apple avec puce A17 Pro
+    Catégorie: Smartphones
+    En stock
+    
+    Samsung Galaxy S24 Ultra - 999.00 EUR
+    SKU: SAMS24ULTRA
+    Disponible en noir et gris
+    
+    PROMOTION SPÉCIALE: -20% sur tous les accessoires ce week-end!
+    """
+    
+    print("🧪 Test d'extraction LLM...")
+    result = extract_products_with_llm(sample_text, "https://example.com")
+    
+    print(f"\n📊 Résultats:")
+    print(f"🛒 Produits extraits: {result.products}")
+    print(f"\n🎁 Promotions: {result.promotions}")
+    
+    return result
+
+
+# Pour utiliser dans Django shell:
+# python manage.py shell
+# >>> from utils.llm_processor import test_llm_extraction
+# >>> test_llm_extraction()
