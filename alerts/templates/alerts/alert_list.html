@@ -1,0 +1,262 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Mes Alertes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-bell"></i> Mes Alertes</h2>
+            <p class="text-muted">{{ total_alerts }} alerte(s) au total - {{ unread_count }} non lue(s)</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if unread_count > 0 %}
+            <form method="post" action="{% url 'alerts:mark_all_as_read' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-check-double"></i> Tout marquer comme lu
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'alerts:alert_list' %}" class="btn btn-outline-secondary {% if not request.GET.status and not request.GET.type %}active{% endif %}">
+                            <i class="fas fa-list"></i> Toutes
+                        </a>
+                        <a href="{% url 'alerts:alert_list' %}?status=unread" class="btn btn-outline-warning {% if request.GET.status == 'unread' %}active{% endif %}">
+                            <i class="fas fa-envelope"></i> Non lues ({{ unread_count }})
+                        </a>
+                        <a href="{% url 'alerts:alert_list' %}?status=read" class="btn btn-outline-success {% if request.GET.status == 'read' %}active{% endif %}">
+                            <i class="fas fa-envelope-open"></i> Lues
+                        </a>
+                    </div>
+
+                    <div class="btn-group ms-3" role="group">
+                        <a href="{% url 'alerts:alert_list' %}?type=new_product" class="btn btn-outline-info {% if request.GET.type == 'new_product' %}active{% endif %}">
+                            <i class="fas fa-box"></i> Nouveaux produits
+                        </a>
+                        <a href="{% url 'alerts:alert_list' %}?type=price_decrease" class="btn btn-outline-success {% if request.GET.type == 'price_decrease' %}active{% endif %}">
+                            <i class="fas fa-arrow-down"></i> Baisse de prix
+                        </a>
+                        <a href="{% url 'alerts:alert_list' %}?type=price_increase" class="btn btn-outline-danger {% if request.GET.type == 'price_increase' %}active{% endif %}">
+                            <i class="fas fa-arrow-up"></i> Hausse de prix
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des alertes -->
+    {% if alerts %}
+    <div class="row">
+        {% for alert in alerts %}
+        <div class="col-md-12 mb-3">
+            <div class="card alert-card {% if not alert.is_read %}border-warning{% endif %}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <!-- Icône selon le type -->
+                        <div class="col-md-1 text-center">
+                            {% if alert.alert_type == 'new_product' %}
+                                <i class="fas fa-box fa-2x text-info"></i>
+                            {% elif alert.alert_type == 'price_decrease' %}
+                                <i class="fas fa-arrow-circle-down fa-2x text-success"></i>
+                            {% elif alert.alert_type == 'price_increase' %}
+                                <i class="fas fa-arrow-circle-up fa-2x text-danger"></i>
+                            {% elif alert.alert_type == 'product_unavailable' %}
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-bell fa-2x text-primary"></i>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contenu de l'alerte -->
+                        <div class="col-md-8">
+                            <h5 class="mb-1">
+                                {{ alert.title }}
+                                {% if not alert.is_read %}
+                                    <span class="badge bg-warning text-dark ms-2">Nouveau</span>
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted mb-2">{{ alert.message }}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-store"></i> {{ alert.competitor.name }} - 
+                                <i class="fas fa-clock"></i> {{ alert.created_at|timesince }} ago
+                            </small>
+
+                            <!-- Détails des valeurs -->
+                            {% if alert.old_value or alert.new_value %}
+                            <div class="mt-2">
+                                {% if alert.old_value.price and alert.new_value.price %}
+                                <span class="badge bg-secondary me-2">Ancien : {{ alert.old_value.price }} €</span>
+                                <span class="badge bg-primary">Nouveau : {{ alert.new_value.price }} €</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="col-md-3 text-end">
+                            {% if alert.product %}
+                            <a href="{% url 'competitors:product_detail' alert.product.id %}" class="btn btn-sm btn-primary mb-2">
+                                <i class="fas fa-eye"></i> Voir le produit
+                            </a>
+                            {% endif %}
+
+                            <div class="btn-group btn-group-sm" role="group">
+                                {% if not alert.is_read %}
+                                <form method="post" action="{% url 'alerts:mark_as_read' alert.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success" title="Marquer comme lu">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <form method="post" action="{% url 'alerts:delete_alert' alert.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" title="Supprimer" 
+                                            onclick="return confirm('Supprimer cette alerte ?');">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badge de sévérité -->
+                <div class="card-footer text-end" style="padding: 5px 15px;">
+                    {% if alert.severity == 'high' %}
+                        <span class="badge bg-danger">Sévérité élevée</span>
+                    {% elif alert.severity == 'medium' %}
+                        <span class="badge bg-warning text-dark">Sévérité moyenne</span>
+                    {% else %}
+                        <span class="badge bg-info">Sévérité faible</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Navigation des alertes">
+        <ul class="pagination justify-content-center">
+            <!-- Première page -->
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">
+                    <i class="fas fa-angle-left"></i> Précédent
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-left"></i> Précédent</span>
+            </li>
+            {% endif %}
+
+            <!-- Pages numérotées -->
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Dernière page -->
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">
+                    Suivant <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Suivant <i class="fas fa-angle-right"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Info pagination -->
+    <p class="text-center text-muted">
+        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} 
+        ({{ page_obj.start_index }}–{{ page_obj.end_index }} sur {{ page_obj.paginator.count }} alertes)
+    </p>
+    {% endif %}
+
+    {% else %}
+    <!-- Aucune alerte -->
+    <div class="alert alert-info text-center">
+        <i class="fas fa-bell-slash fa-3x mb-3"></i>
+        <h4>Aucune alerte</h4>
+        <p>Vous n'avez aucune alerte pour le moment.</p>
+        <a href="{% url 'competitors:competitor_list' %}" class="btn btn-primary mt-2">
+            <i class="fas fa-store"></i> Voir mes concurrents
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.alert-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.alert-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+.alert-card.border-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.pagination .page-link {
+    color: #007bff;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}
+</style>
+{% endblock %}
