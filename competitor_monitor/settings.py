@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_bootstrap5',
     'auth_app',
     'competitors',
     'alerts',
@@ -76,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'auth_app.context_processors.unread_alerts',
             ],
         },
     },
@@ -101,7 +103,8 @@ DATABASES = {
 # Authentication settings
 # Redirect to login page if not authenticated
 LOGIN_URL = 'connexion'
-
+LOGIN_REDIRECT_URL = 'client_dashboard'
+LOGOUT_REDIRECT_URL = 'home'  # Rediriger vers home après déconnexion
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -24,8 +24,8 @@ urlpatterns = [
     
     path('admin/', admin.site.urls),
     path('', include('auth_app.urls')),
-    path('competitors/', include('competitors.urls')),  # ✅ AJOUTER
-    path('alerts/', include('alerts.urls')),            # ✅ AJOUTER
+    path('competitors/', include('competitors.urls')),  
+    path('alerts/', include('alerts.urls')),            
 ]
 
 # Pour servir les fichiers media en développement
