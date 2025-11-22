@@ -1,0 +1,145 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Produits - {{ competitor.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête avec retour -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'competitors:competitor_list' %}">Concurrents</a></li>
+                    <li class="breadcrumb-item active">{{ competitor.name }}</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-boxes"></i> Produits de {{ competitor.name }}</h2>
+            <p class="text-muted">{{ total_products }} produit(s) surveillé(s)</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ competitor.base_url }}" target="_blank" class="btn btn-outline-primary">
+                <i class="fas fa-external-link-alt"></i> Visiter le site
+            </a>
+        </div>
+    </div>
+
+    <!-- Informations du concurrent -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-2">{{ competitor.name }}</h5>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-link"></i> {{ competitor.base_url }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if competitor.last_scraped_at %}
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Dernier scraping : {{ competitor.last_scraped_at|timesince }} ago
+                        </small>
+                    {% else %}
+                        <span class="badge bg-warning">Jamais scrapé</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des produits -->
+    {% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 product-card">
+                <!-- Image du produit -->
+                <div class="card-img-top-wrapper" style="height: 200px; overflow: hidden; background: #f8f9fa;">
+                    {% if product.image_url %}
+                        <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                             style="width: 100%; height: 100%; object-fit: contain;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name|truncatechars:50 }}</h5>
+                    
+                    {% if product.category %}
+                    <span class="badge bg-secondary mb-2">{{ product.category }}</span>
+                    {% endif %}
+
+                    <p class="card-text text-muted small">
+                        {{ product.description|truncatechars:100|default:"Aucune description" }}
+                    </p>
+
+                    <!-- Prix actuel -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="text-primary mb-0">
+                            {{ product.current_price }} {{ product.currency }}
+                        </h4>
+                        {% if product.is_available %}
+                            <span class="badge bg-success">En stock</span>
+                        {% else %}
+                            <span class="badge bg-danger">Indisponible</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Informations supplémentaires -->
+                    <div class="small text-muted mb-3">
+                        <p class="mb-1">
+                            <i class="fas fa-barcode"></i> SKU: {{ product.product_identifier }}
+                        </p>
+                        <p class="mb-0">
+                            <i class="fas fa-calendar"></i> Détecté : {{ product.first_detected_at|date:"d/m/Y" }}
+                        </p>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'competitors:product_detail' product.id %}" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Voir l'historique
+                        </a>
+                        <a href="{{ product.product_url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> Voir sur le site
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-footer text-muted small">
+                    Mis à jour : {{ product.last_updated_at|timesince }} ago
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Aucun produit -->
+    <div class="alert alert-info text-center">
+        <i class="fas fa-box-open fa-3x mb-3"></i>
+        <h4>Aucun produit pour le moment</h4>
+        <p>Lancez un scraping pour découvrir les produits de ce concurrent.</p>
+        <form method="post" action="{% url 'competitors:trigger_scraping' competitor.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success mt-2">
+                <i class="fas fa-download"></i> Lancer le scraping
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,.15) !important;
+}
+</style>
+{% endblock %}

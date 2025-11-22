@@ -1,0 +1,137 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'competitors:competitor_list' %}">Concurrents</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'competitors:product_list' product.competitor.id %}">{{ product.competitor.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Informations du produit -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center" style="background: #f8f9fa;">
+                    {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 300px;">
+                    {% else %}
+                        <i class="fas fa-image fa-5x text-muted"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ product.name }}</h2>
+                    
+                    {% if product.category %}
+                    <span class="badge bg-secondary mb-3">{{ product.category }}</span>
+                    {% endif %}
+
+                    <h3 class="text-primary mb-3">
+                        {{ product.current_price }} {{ product.currency }}
+                        {% if product.is_available %}
+                            <span class="badge bg-success ms-2">En stock</span>
+                        {% else %}
+                            <span class="badge bg-danger ms-2">Indisponible</span>
+                        {% endif %}
+                    </h3>
+
+                    <p class="text-muted">{{ product.description|default:"Aucune description disponible" }}</p>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-barcode"></i> SKU :</strong> {{ product.product_identifier }}</p>
+                            <p><strong><i class="fas fa-store"></i> Concurrent :</strong> {{ product.competitor.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-calendar-plus"></i> Détecté le :</strong> {{ product.first_detected_at|date:"d/m/Y à H:i" }}</p>
+                            <p><strong><i class="fas fa-sync"></i> Dernière MAJ :</strong> {{ product.last_updated_at|date:"d/m/Y à H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ product.product_url }}" target="_blank" class="btn btn-primary mt-3">
+                        <i class="fas fa-external-link-alt"></i> Voir sur le site concurrent
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'historique des prix -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-chart-line"></i> Historique des Prix</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="priceChart" height="80"></canvas>
+        </div>
+    </div>
+
+    <!-- Tableau d'historique des prix -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Détails de l'Historique</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Prix</th>
+                            <th>Variation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in price_history %}
+                        <tr>
+                            <td>{{ history.recorded_at|date:"d/m/Y H:i" }}</td>
+                            <td class="fw-bold">{{ history.price }} {{ product.currency }}</td>
+                            <td>
+                                {% if forloop.counter0 > 0 %}
+                                    {% with prev_price=price_history|slice:":forloop.counter0"|last %}
+                                    {% with current_price=history.price|floatformat:2 %}
+                                    {% with previous_price=prev_price.price|floatformat:2 %}
+                                        {% if current_price > previous_price %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-arrow-up"></i> +{{ current_price|add:"-"|add:previous_price }} {{ product.currency }}
+                                            </span>
+                                        {% elif current_price < previous_price %}
+                                            <span class="text-success">
+                                                <i class="fas fa-arrow-down"></i> {{ current_price|add:"-"|add:previous_price }} {{ product.currency }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Aucun historique disponible</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
