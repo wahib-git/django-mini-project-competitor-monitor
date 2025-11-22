@@ -2,34 +2,50 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Alert
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-
-@login_required
 def alert_list(request):
-    """
-    Liste des alertes de l'utilisateur
-    """
-    alerts = Alert.objects.filter(user=request.user).order_by('-created_at')
+    # Récupérer toutes les alertes de l'utilisateur
+    alerts = Alert.objects.filter(user=request.user).select_related('competitor', 'product')
     
-    # Filtrage par type si spécifié
-    alert_type = request.GET.get('type', None)
-    if alert_type:
-        alerts = alerts.filter(alert_type=alert_type)
+    # Filtres
+    status_filter = request.GET.get('status')
+    type_filter = request.GET.get('type')
     
-    # Filtrage par statut lu/non lu
-    status = request.GET.get('status', None)
-    if status == 'unread':
+    if status_filter == 'unread':
         alerts = alerts.filter(is_read=False)
-    elif status == 'read':
+    elif status_filter == 'read':
         alerts = alerts.filter(is_read=True)
     
+    if type_filter:
+        alerts = alerts.filter(alert_type=type_filter)
+    
+    # Tri par date décroissante
+    alerts = alerts.order_by('-created_at')
+    
+    # Compteurs
+    total_alerts = Alert.objects.filter(user=request.user).count()
+    unread_count = Alert.objects.filter(user=request.user, is_read=False).count()
+    
+    # Pagination (10 alertes par page)
+    paginator = Paginator(alerts, 5)
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    
     context = {
-        'alerts': alerts,
-        'total_alerts': alerts.count(),
-        'unread_count': Alert.objects.filter(user=request.user, is_read=False).count(),
+        'alerts': page_obj,
+        'page_obj': page_obj,
+        'total_alerts': total_alerts,
+        'unread_count': unread_count,
     }
+    
     return render(request, 'alerts/alert_list.html', context)
-
 
 @login_required
 def mark_as_read(request, alert_id):
