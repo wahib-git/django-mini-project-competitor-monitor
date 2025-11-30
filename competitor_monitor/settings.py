@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'auth_app',
     'competitors',
     'alerts',
+    'clients',
 ]
 
 MIDDLEWARE = [

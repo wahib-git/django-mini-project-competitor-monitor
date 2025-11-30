@@ -25,7 +25,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('auth_app.urls')),
     path('competitors/', include('competitors.urls')),  
-    path('alerts/', include('alerts.urls')),            
+    path('alerts/', include('alerts.urls')),   
+    path('clients/', include('clients.urls')),          
 ]
 
 # Pour servir les fichiers media en développement
