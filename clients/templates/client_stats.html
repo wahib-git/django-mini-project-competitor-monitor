@@ -1,0 +1,120 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Statistiques - {{ client.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'client_list' %}">Clients</a></li>
+            <li class="breadcrumb-item active">{{ client.username }}</li>
+        </ol>
+    </nav>
+
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-user"></i> {{ client.username }}</h2>
+            <p class="text-muted">{{ client.email }} - Membre depuis {{ client.date_joined|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-store fa-2x text-primary mb-2"></i>
+                    <h3>{{ total_competitors }}</h3>
+                    <p class="text-muted mb-0">Concurrents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-boxes fa-2x text-success mb-2"></i>
+                    <h3>{{ total_products }}</h3>
+                    <p class="text-muted mb-0">Produits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-bell fa-2x text-warning mb-2"></i>
+                    <h3>{{ total_alerts }}</h3>
+                    <p class="text-muted mb-0">Alertes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-envelope fa-2x text-danger mb-2"></i>
+                    <h3>{{ unread_alerts }}</h3>
+                    <p class="text-muted mb-0">Non lues</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails par concurrent -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Détails par Concurrent</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Concurrent</th>
+                            <th>URL</th>
+                            <th>Produits</th>
+                            <th>Alertes</th>
+                            <th>Dernier scraping</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in competitor_stats %}
+                        <tr>
+                            <td><strong>{{ stat.competitor.name }}</strong></td>
+                            <td>
+                                <a href="{{ stat.competitor.base_url }}" target="_blank">
+                                    {{ stat.competitor.base_url|truncatechars:40 }}
+                                </a>
+                            </td>
+                            <td><span class="badge bg-info">{{ stat.product_count }}</span></td>
+                            <td><span class="badge bg-warning">{{ stat.alert_count }}</span></td>
+                            <td>
+                                {% if stat.competitor.last_scraped_at %}
+                                    {{ stat.competitor.last_scraped_at|timesince }} ago
+                                {% else %}
+                                    <span class="text-muted">Jamais</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if stat.competitor.is_active %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Aucun concurrent</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

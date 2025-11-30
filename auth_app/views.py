@@ -75,3 +75,5 @@ def deconnexion(request):
     logout(request)
     messages.success(request, "Vous avez été déconnecté avec succès.")
     return redirect('home')
+
+

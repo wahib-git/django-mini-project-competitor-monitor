@@ -1,9 +1,181 @@
-{% extends "base.html" %}
+{% extends 'base_app.html' %}
+{% load static %}
+
 {% block title %}Admin Dashboard{% endblock %}
+
 {% block content %}
-<div class="container">
-  <h2>Dashboard Admin</h2>
-  <p>Vous êtes administrateur.</p>
-  <a href="{% url 'deconnexion' %}" class="logout-link">Déconnexion</a>
-</div>
+<div class="container mt-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-tachometer-alt"></i> Tableau de Bord Administrateur</h2>
+            <p class="text-muted">Vue d'ensemble de la plateforme</p>
+        </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Total Clients</h6>
+                            <h2 class="mb-0">{{ total_clients }}</h2>
+                            <small>{{ active_clients }} actifs</small>
+                        </div>
+                        <i class="fas fa-users fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-primary-dark">
+                    <a href="{% url 'client_list' %}" class="text-white text-decoration-none small">
+                        Voir tous les clients <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Concurrents</h6>
+                            <h2 class="mb-0">{{ total_competitors }}</h2>
+                            <small>Surveillés</small>
+                        </div>
+                        <i class="fas fa-store fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Produits</h6>
+                            <h2 class="mb-0">{{ total_products }}</h2>
+                            <small>Trackés</small>
+                        </div>
+                        <i class="fas fa-boxes fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Alertes</h6>
+                            <h2 class="mb-0">{{ total_alerts }}</h2>
+                            <small>{{ unread_alerts }} non lues</small>
+                        </div>
+                        <i class="fas fa-bell fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques et listes -->
+    <div class="row">
+        <!-- Derniers clients inscrits -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-user-plus"></i> Derniers Clients Inscrits</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>Email</th>
+                                    <th>Inscription</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in recent_clients %}
+                                <tr>
+                                    <td>{{ client.username }}</td>
+                                    <td>{{ client.email }}</td>
+                                    <td>{{ client.date_joined|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if client.is_active %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Aucun client</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients les plus actifs -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Clients les Plus Actifs</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>Email</th>
+                                    <th>Concurrents</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in top_clients %}
+                                <tr>
+                                    <td>{{ client.username }}</td>
+                                    <td>{{ client.email|truncatechars:25 }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ client.competitor_count }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'client_stats' client.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-chart-bar"></i> Stats
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Aucun client</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+.opacity-50 {
+    opacity: 0.5;
+}
+.bg-primary-dark {
+    background-color: rgba(13, 110, 253, 0.2);
+}
+</style>
 {% endblock %}
