@@ -155,13 +155,13 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
     }
     
     # Désactiver les migrations pour accélérer
-    class DisableMigrations:
-        def __contains__(self, item):
-            return True
-        def __getitem__(self, item):
-            return None
+    # class DisableMigrations:
+    #     def __contains__(self, item):
+    #         return True
+    #     def __getitem__(self, item):
+    #         return None
     
-    MIGRATION_MODULES = DisableMigrations()
+    # MIGRATION_MODULES = DisableMigrations()
     
     # Simplifier le hashage des mots de passe pour tests rapides
     PASSWORD_HASHERS = [

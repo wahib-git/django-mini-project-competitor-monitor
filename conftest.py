@@ -1,14 +1,17 @@
 import pytest
 from django.contrib.auth.models import User, Group
+from django.core.management import call_command
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture(scope='session')
-def django_db_setup():
-    """Configuration de la base de données de test"""
-    pass
+def django_db_setup(django_db_setup, django_db_blocker):
+    """Configuration de la base de données de test avec migrations"""
+    with django_db_blocker.unblock():
+        # Appliquer toutes les migrations
+        call_command('migrate', '--run-syncdb', verbosity=0)
 
 
 @pytest.fixture
