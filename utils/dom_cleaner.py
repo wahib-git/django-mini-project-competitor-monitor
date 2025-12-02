@@ -1,20 +1,15 @@
-from bs4 import BeautifulSoup
-
-
-
+import re
 def clean_html_content(raw_html):
     """
-    Nettoie le HTML pour garder seulement le contenu pertinent
+    Supprime les espaces multiples du HTML brut
     """
-    soup = BeautifulSoup(raw_html, 'lxml')
-
-    # Supprimer les tags inutiles
-    for tag in soup(['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe', 'noscript']):
-        tag.decompose()
-
-    # Extraire le texte
-    text = soup.get_text(separator=' ', strip=True)
-    print(f"Texte extrait du HTML: {text[:50000]}")  # Log first 50000 chars
+    # Remplacer tous les espaces multiples par un seul
+    cleaned = re.sub(r'\s+', ' ', raw_html)
+    
+    # Supprimer espaces entre tags (optionnel)
+    cleaned = re.sub(r'>\s+<', '><', cleaned)
+    text = cleaned.strip()
+    print(f"HTML nettoyé: {text[:50000]}")
     return text
 
 
