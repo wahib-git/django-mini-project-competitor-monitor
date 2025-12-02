@@ -99,3 +99,14 @@ npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .parcel-cache/
+
+# Fichiers pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+report.html
+
+# Base de données de test
+test_*.db
+db.sqlite3-journal
