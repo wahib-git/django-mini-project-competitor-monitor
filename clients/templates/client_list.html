@@ -47,9 +47,6 @@
                             <th>Nom d'utilisateur</th>
                             <th>Email</th>
                             <th>Nom complet</th>
-                            <th>Concurrents</th>
-                            <th>Produits</th>
-                            <th>Alertes</th>
                             <th>Inscription</th>
                             <th>Statut</th>
                             <th class="text-center">Actions</th>
@@ -62,9 +59,6 @@
                             <td><strong>{{ client.username }}</strong></td>
                             <td>{{ client.email }}</td>
                             <td>{{ client.first_name }} {{ client.last_name }}</td>
-                            <td><span class="badge bg-primary">{{ client.competitor_count }}</span></td>
-                            <td><span class="badge bg-info">{{ client.product_count }}</span></td>
-                            <td><span class="badge bg-warning">{{ client.alert_count }}</span></td>
                             <td>{{ client.date_joined|date:"d/m/Y" }}</td>
                             <td>
                                 {% if client.is_active %}

@@ -82,19 +82,21 @@ def extract_products_with_llm(text_batch: str, competitor_base_url: str, model: 
     """
     
     # Prompt optimisé pour l'extraction structurée
+
+    
     system_prompt = """You are an expert in data extraction for e-commerce.
 Your mission is to analyze text from competitor websites and extract ALL product information in a structured and precise manner.
 
 STRICT RULES:
 1. Extract only information present in the text
-2. NEVER generate fictional or invented data
-3. If a field is uncertain, use null
-4. Identify the product code (SKU, reference, model) as product_identifier; if unavailable, copy the name 
-5. The product and image URLs must be concatenated with competitor_base_url if they are relative paths
-6. Detect promotions and special offers separately
-7. If more than 1 fields are missing or null for a product, ignore it
-8. If you determine this cannot be a product, ignore it
-9. Distinguish between a product and a category of products; if it's a category, ignore it.
+2. NEVER generate fictional or invented data except for the product_identifier use the product name, without adding anything else.
+3. If it's a bouquet of a certain type of flower (bouquet of something), ignore it.
+4. If it's a category of products (Fleurs d'Amour, Fleurs de 200 à 300 dt ), ignore it.
+5. If you determine this cannot be a product, ignore it
+6. The product and image URLs must be concatenated with competitor_base_url if they are relative paths
+7. If a field is uncertain, use null
+8. If more than 1 fields are missing or null for a product, ignore it
+9. Detect promotions and special offers separately
 
 OUTPUT FORMAT:
 The JSON must follow exactly this schema with these mandatory fields:

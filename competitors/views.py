@@ -10,6 +10,9 @@ from .models import Competitor, Product, PriceHistory, ScrapeSession
 from .forms import CompetitorForm
 from .scraper import scrape_competitor_website, analyze_price_changes
 from alerts.models import Alert
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+
 
 
 @login_required
@@ -158,7 +161,7 @@ def product_list(request, competitor_id):
     Liste des produits d'un concurrent spécifique
     """
     competitor = get_object_or_404(Competitor, id=competitor_id, user=request.user)
-    products = competitor.products.all().order_by('-last_updated_at')
+    products = competitor.products.all().order_by('last_updated_at')
     
     context = {
         'competitor': competitor,
@@ -180,18 +183,25 @@ def product_detail(request, product_id):
         messages.error(request, "❌ Vous n'avez pas accès à ce produit.")
         return redirect('competitors:competitor_list')
     
-    # Récupérer l'historique des prix
-    price_history = product.price_history.all()[:30]  # 30 derniers enregistrements
+    # Récupérer l'historique des prix (30 derniers)
+    price_history = product.price_history.all()[:30]
     
-    # Préparer les données pour le graphique
+    # Préparer les données pour Chart.js
+    chart_labels = []
+    chart_prices = []
+    
+    for ph in reversed(list(price_history)):
+        chart_labels.append(ph.recorded_at.strftime('%d/%m %H:%M'))
+        chart_prices.append(float(ph.price))
+    
     chart_data = {
-        'labels': [ph.recorded_at.strftime('%d/%m %H:%M') for ph in reversed(price_history)],
-        'prices': [float(ph.price) for ph in reversed(price_history)],
+        'labels': chart_labels,
+        'prices': chart_prices,
     }
     
     context = {
         'product': product,
         'price_history': price_history,
-        'chart_data': chart_data,
+        'chart_data': json.dumps(chart_data, cls=DjangoJSONEncoder),
     }
     return render(request, 'competitors/product_detail.html', context)

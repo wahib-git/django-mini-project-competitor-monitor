@@ -15,7 +15,6 @@ from utils.llm_processor import extract_products_with_llm
 def scrape_competitor_website(competitor_id):
     """
     Fonction principale de scraping (appelée manuellement par le client)
-    SANS Celery - exécution synchrone
     """
     try:
         competitor = Competitor.objects.get(id=competitor_id)
@@ -73,29 +72,34 @@ def scrape_competitor_website(competitor_id):
         print("🧹 4.Nettoyage du HTML...")
         cleaned_text = clean_html_content(raw_html)
         
+    
         # 5. Diviser en batches
         batches = split_into_batches(cleaned_text, max_chars=7500)
         print("📦 5.Texte divisé en batches pour LLM")
         print(f"📦 {len(batches)} batches créés")
-        print(f'📦 Exemple batch 1 (premiers 7500 chars): {batches[0][:7500]}')
-        print(f'📦 Exemple batch 2 (premiers 7500 chars): {batches[1][:7500]}' if len(batches) > 1 else "📦 Pas de batch 2")
+        
 
-        # 6. Extraire les produits avec LLM
+        # 6. Extraire les produits avec LLM (UNIQUEMENT BATCH 3)
         all_products = []
         all_promotions = []
         
-        for i, batch in enumerate(batches):
-            print(f"🤖 Traitement batch {i+1}/{len(batches)} avec LLM...")
-            llm_response = extract_products_with_llm(text_batch=batch, competitor_base_url=competitor.base_url,model='llama3.1')
-            all_products.extend(llm_response.products)
-            all_promotions.extend(llm_response.promotions)
+        # 🔥 Traiter UNIQUEMENT le batch d'indice 2 (3ème batch)
+        i = 2
+        print(f"🤖 Traitement batch {i+1}/{len(batches)} avec LLM...")
+        llm_response = extract_products_with_llm(
+            text_batch=batches[i], 
+            competitor_base_url=competitor.base_url,
+            model='llama3.1'
+        )
+        all_products.extend(llm_response.products)
+        all_promotions.extend(llm_response.promotions)
+        
         print("🤖 6.Extraction LLM terminée")
         print(f"✅ {len(all_products)} produits extraits")
         print(f"✅ {len(all_promotions)} promotions extraites")
         print(f"✅ produits extraits exemple: {[p.name for p in all_products[:3]]}")
         print(f"✅ promotions extraites exemple: {all_promotions[:3]}")
 
-        
         # 7. Sauvegarder les produits en base de données
         products_saved = save_products_to_database(
             all_products, 

@@ -23,7 +23,7 @@ STATICFILES_DIRS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/competitor_monitor/static/'
+STATIC_URL = '/static/'
 
 # Media files (pour les images scrapées éventuellement)
 MEDIA_URL = '/media/'
@@ -170,3 +170,15 @@ if 'test' in sys.argv or 'pytest' in sys.modules:
     
     # Désactiver les logs en tests
     LOGGING_CONFIG = None
+
+    # Configuration des fichiers statiques pour les tests
+    STATIC_ROOT = BASE_DIR / 'staticfiles_test'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    
+    # Désactiver le favicon pour éviter les erreurs 404
+    MIDDLEWARE = [m for m in MIDDLEWARE if 'CommonMiddleware' in m or 'Security' in m or 'Session' in m or 'Auth' in m or 'Message' in m or 'Clickjacking' in m]
+    # Servir les fichiers statiques pendant les tests
+    STATICFILES_FINDERS = [
+        'django.contrib.staticfiles.finders.FileSystemFinder',
+        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    ]    

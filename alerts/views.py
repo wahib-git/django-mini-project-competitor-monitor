@@ -21,7 +21,7 @@ def alert_list(request):
         alerts = alerts.filter(alert_type=type_filter)
     
     # Tri par date décroissante
-    alerts = alerts.order_by('-created_at')
+    alerts = alerts.order_by('created_at')
     
     # Compteurs
     total_alerts = Alert.objects.filter(user=request.user).count()
