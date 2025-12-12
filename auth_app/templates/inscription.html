@@ -1,8 +1,8 @@
-{% extends "base_auth.html" %}
+{% extends "base_public.html" %}
 {% block title %}Inscription{% endblock %}
 {% block content %}
-  <div class="container">
-    <div class="form">
+  <div class="auth-wrapper">
+    <div class="auth-card">
       <form method="post" action="{% url 'inscription' %}">
         {% csrf_token %}
         <h1>Inscription</h1>

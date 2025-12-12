@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block body_class %}public-layout{% endblock %}
+
+{% block layout %}
+    <!-- Navbar Publique -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm" style="background-color: rgba(255, 255, 255, 0.9);">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'home' %}">
+                <i class="fas fa-chart-pie"></i> Competitor Monitor
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenu spécifique à la page -->
+    <main class="public-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="py-4 text-center text-muted mt-auto">
+        <small>&copy; 2025 Competitor Monitor</small>
+    </footer>
+{% endblock %}

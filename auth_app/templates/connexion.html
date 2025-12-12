@@ -1,24 +1,17 @@
-{% extends "base_auth.html" %}
+{% extends 'base_public.html' %}
 {% block title %}Connexion{% endblock %}
 {% block content %}
-<div class="container">
-  <div class="form">
-    <h1>Connexion</h1>
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <p class="{{ message.tags }}">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
-    <form method="post" action="{% url 'connexion' %}">
-      {% csrf_token %} 
-      {{ form.as_p }}
-      <button type="submit">Se connecter</button>
-    </form>
-    <p class="link">
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2 class="text-center mb-4">Connexion</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+        </form>
+        <p class="link">
       Pas encore inscrit ? <a href="{% url 'inscription' %}">S'inscrire</a>
     </p>
-  </div>
+    </div>
 </div>
 {% endblock %}
