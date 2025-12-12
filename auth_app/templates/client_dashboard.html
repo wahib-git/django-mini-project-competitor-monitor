@@ -1,7 +1,7 @@
-{% extends 'base_app.html' %}
-{% block title %}Dashboard Client{% endblock %}
+{% extends 'base_dashboard.html' %}
+{% block title %}Tableau de Bord Client{% endblock %}
 {% block content %}
-<div class="container mt-4 dashboard-wrapper">
+<div class="dashboard-card p-4">
   <h2 class="mb-4 text-center">Bienvenue, {{ request.user.username }} ! 👋</h2>
 
   <div class="row justify-content-center">
@@ -21,6 +21,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Card Alertes -->
     <div class="col-md-4 mb-3">
@@ -48,7 +49,8 @@
           </a>
         </div>
       </div>
-    </div>
+    </div>    
   </div>
-</div>
+</div>  
+
 {% endblock %}
